@@ -8,18 +8,28 @@
                     Station
                 </td>
                 <td class="px-4 border border-gray-300 dark:border-gray-600">
-                    Arrive
+                    Planned Departure
                 </td>
                 <td class="px-4 border border-gray-300 dark:border-gray-600">
-                    Departure
+                    Actual Departure
                 </td>
                 <td class="px-4 border border-gray-300 dark:border-gray-600">
-                    Delay
+                    Delay Departure
+                </td>
+                <td class="px-4 border border-gray-300 dark:border-gray-600">
+                    Planned Arrive
+                </td>
+                <td class="px-4 border border-gray-300 dark:border-gray-600">
+                    Actual Arrive
+                </td>
+                <td class="px-4 border border-gray-300 dark:border-gray-600">
+                    Delay Arrive
                 </td>
             </tr>
         </thead>
         <tbody>
-            @php $count = 0; @endphp
+            @php $countDepar = 0; @endphp
+            @php $countArrive = 0; @endphp
 
             @foreach($result as  $key => $item)
                 <tr>
@@ -27,22 +37,34 @@
                         {{ $key }}
                     </td>
                     <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
-                        {{ $item['arrives']['date'] ?? '' }}
-                    </td>
-                    <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
                         {{ $item['departure']['date'] ?? '' }}
                     </td>
                     <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
-                        @if(isset($item['arrives']['date']) && isset($item['departure']['date']))
-                            @php $count +=  Carbon\Carbon::parse($item['arrives']['date'])->diffInMinutes($item['departure']['date']) @endphp
-                            {{ Carbon\Carbon::parse($item['arrives']['date'])->diffInMinutes($item['departure']['date']) }} Minutes
+                        {{ $item['departure']['dp_ct'] ?? '' }}
+                    </td>
+                    <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
+                        @if(isset($item['departure']['date']) && isset($item['departure']['dp_ct']))
+                            @php $countDepar +=  Carbon\Carbon::parse($item['departure']['date'])->diffInMinutes($item['departure']['dp_ct']) @endphp
+                            {{ Carbon\Carbon::parse($item['departure']['date'])->diffInMinutes($item['departure']['dp_ct']) }} Minutes
+                        @endif
+                    </td>
+                    <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
+                        {{ $item['arrives']['date'] ?? '' }}
+                    </td>
+                    <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
+                        {{ $item['arrives']['dp_ct'] ?? '' }}
+                    </td>
+                    <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
+                        @if(isset($item['arrives']['date']) && isset($item['arrives']['dp_ct']))
+                            @php $countArrive +=  Carbon\Carbon::parse($item['arrives']['date'])->diffInMinutes($item['arrives']['dp_ct']) @endphp
+                            {{ Carbon\Carbon::parse($item['arrives']['date'])->diffInMinutes($item['arrives']['dp_ct']) }} Minutes
                         @endif
                     </td>
                 </tr>
             @endforeach
             <tr>
                 <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
-                    Total delay
+                    Delay
                 </td>
                 <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
 
@@ -51,7 +73,16 @@
 
                 </td>
                 <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
-                    {{ $count }} Minutes
+                    {{ $countDepar }} Minutes
+                </td>
+                <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
+
+                </td>
+                <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
+
+                </td>
+                <td class="px-4 whitespace-nowrap border border-gray-300 dark:border-gray-600">
+                    {{ $countArrive }} Minutes
                 </td>
             </tr>
         </tbody>

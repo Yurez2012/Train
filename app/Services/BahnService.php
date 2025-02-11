@@ -53,8 +53,9 @@ class BahnService
      * @param $date
      * @param $time
      * @param $trainId
+     * @param $arrivesId
      *
-     * @return array
+     * @return array|mixed
      * @throws ConnectionException
      */
     public function getStationInfoByTimeAndTrainId($eko, $date, $time, $trainId, $arrivesId)
@@ -79,26 +80,25 @@ class BahnService
 
     /**
      * @param $eko
+     * @param $id
      *
-     * @return array
+     * @return mixed|string|null
      * @throws ConnectionException
      */
-    public function getStationInfoAndId($eko, $id)
+    public function getStationInfoAndId($eko, $id, $type = 'ar'): mixed
     {
         $response = Http::withHeaders($this->getHeader())->get($this->url . "/fchg/{$eko}");
 
-        return $this->getResponseById($this->getResponse($response), $id);
+        return $this->getResponseById($this->getResponse($response), $id, $type);
     }
 
     /**
      * @param $eko
-     * @param $date
-     * @param $time
      *
      * @return array
      * @throws ConnectionException
      */
-    public function getStationInfoRchg($eko)
+    public function getStationInfoRchg($eko): array
     {
         $response = Http::withHeaders($this->getHeader())->get($this->url . "/rchg/{$eko}");
 
@@ -142,37 +142,34 @@ class BahnService
     /**
      * @param $response
      * @param $trainId
-     * @param $eko
      * @param $arrivesId
+     * @param $eko
+     * @param $date
+     * @param $time
      *
-     * @return array|mixed
+     * @return array
+     * @throws ConnectionException
      */
-    public function getResponseByTrain($response, $trainId, $arrivesId, $eko, $date, $time)
+    protected function getResponseByTrain($response, $trainId, $arrivesId, $eko, $date, $time): array
     {
         $data = [];
 
         foreach (Arr::get($response, 's', []) as $item) {
             if (Arr::get($item, 'tl.@attributes.n') == $arrivesId) {
-                $data['arrives'] = $this->castTrainData(Arr::get($item, 'ar.@attributes', []));
+                $data['arrives'] = $this->castTrainData(Arr::get($item, 'ar.@attributes', []), $eko, Arr::get($item, '@attributes.id'));
             }
 
             if (Arr::get($item, 'tl.@attributes.n') == $trainId) {
-                $data['departure'] = $this->castTrainData(Arr::get($item, 'dp.@attributes', []));
+                $data['departure'] = $this->castTrainData(Arr::get($item, 'dp.@attributes', []), $eko, Arr::get($item, '@attributes.id'));
             }
 
             if (Arr::get($item, 'dp.@attributes.l') == $trainId) {
-                $data['departure'] = $this->castTrainData(Arr::get($item, 'dp.@attributes', []));
+                $data['departure'] = $this->castTrainData(Arr::get($item, 'dp.@attributes', []), $eko, Arr::get($item, '@attributes.id'));
             }
 
             if (Arr::get($item, 'ar.@attributes.l') == $trainId) {
-                $data['departure'] = $this->castTrainData(Arr::get($item, 'ar.@attributes', []));
+                $data['departure'] = $this->castTrainData(Arr::get($item, 'ar.@attributes', []), $eko, Arr::get($item, '@attributes.id'));
             }
-        }
-
-        if(!isset($data['arrives']) && !is_string($arrivesId)) {
-            $result = $this->getStationInfoByTimeAndTrainId($eko, $date, $time - 1, $trainId, $arrivesId);
-
-            $data['arrives'] = Arr::get($result, 'arrives');
         }
 
         return $data;
@@ -181,21 +178,22 @@ class BahnService
     /**
      * @param $response
      * @param $id
+     * @param $type
      *
-     * @return mixed|null
+     * @return mixed
      */
-    public function getResponseById($response, $id)
+    protected function getResponseById($response, $id, $type): mixed
     {
         foreach (Arr::get($response, 's', []) as $item) {
             if (Arr::get($item, '@attributes.id') == $id) {
-                return $this->castTrainDelayData(Arr::get($item, 'dp.@attributes', []));
+                return $this->castTrainDelayData(Arr::get($item, $type.'.@attributes', []));
             }
         }
 
         return null;
     }
 
-    public function castTrainData(array $data): array
+    protected function castTrainData(array $data, $eko, $id): array
     {
         $date = null;
 
@@ -208,13 +206,17 @@ class BahnService
         }
 
         return [
-            'date'            => !empty(Arr::get($data, 'ct')) || !empty(Arr::get($data, 'pt'))  ? $date->format('Y-m-d H:i') : null,
-            'platform'        => Arr::get($data, 'pp'),
-            'the_path_taken'  => Arr::get($data, 'ppth'),
+            'date'           => !empty(Arr::get($data, 'ct')) || !empty(Arr::get($data, 'pt')) ? $date->format('Y-m-d H:i') : null,
+            'platform'       => Arr::get($data, 'pp'),
+            'the_path_taken' => Arr::get($data, 'ppth'),
+            'eko'            => $eko,
+            'id'             => $id,
+            'ar_ct'           => $this->getStationInfoAndId($eko, $id),
+            'dp_ct'           => $this->getStationInfoAndId($eko, $id, 'dp'),
         ];
     }
 
-    public function castTrainDelayData(array $data): ?string
+    protected function castTrainDelayData(array $data): ?string
     {
         if (!empty(Arr::get($data, 'ct'))) {
             $date = Carbon::createFromFormat('ymdHi', Arr::get($data, 'ct'));
