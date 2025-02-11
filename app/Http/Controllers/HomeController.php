@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TrainRequest;
 use App\Services\BahnService;
+use Carbon\Carbon;
+use Illuminate\Support\Arr;
 
 class HomeController extends Controller
 {
@@ -25,8 +27,21 @@ class HomeController extends Controller
 
     public function index(TrainRequest $request)
     {
+        $data = $request->validated();
+
         $result = [];
 
+        foreach (Arr::get($data, 'trains', []) as $key => $train) {
+            $evaNumber = $this->config[Arr::get($train, 'station')] ?? $this->bahnService->getStation('Neumünster');
+
+            $result[Arr::get($train, 'station')] = $this->bahnService->getStationInfoByTimeAndTrainId(
+                $evaNumber,
+                Carbon::parse(Arr::get($train, 'date'))->format('ymd'),
+                Arr::get($train, 'time'),
+                Arr::get($train, 'trainID'),
+                Arr::get($data, 'trains.'.($key - 1).'.trainID', Arr::get($data, 'trains.'.$key.'.trainID'))
+            );
+        }
 
 //        $result['Neumünster']     = $this->bahnService->getStationInfoByTimeAndTrainId($this->config['Neumünster'], 250211, '08', 11211, 11211);
 //        $result['Hamburg Hbf']    = $this->bahnService->getStationInfoByTimeAndTrainId($this->config['Hamburg Hbf'], 250211, 10, 787, 11211);

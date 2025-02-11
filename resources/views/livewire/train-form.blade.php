@@ -22,25 +22,27 @@
         @foreach ($trains as $index => $train)
             <div class="mb-2 flex flex-row gap-5 items-center">
                 <div class="w-full">
-                    <input class="w-full p-2 border border-gray-300 rounded" type="text" name="trains[{{ $index }}][station]" placeholder="Station"/>
+                    <input value="{{ Arr::get($train, 'station') }}" class="w-full p-2 border border-gray-300 rounded" type="text" name="trains[{{ $index }}][station]" placeholder="Station"/>
                 </div>
                 <div class="w-full">
-                    <input class="w-full p-2 border border-gray-300 rounded" type="date" name="trains[{{ $index }}][date]"/>
+                    <input value="{{ Arr::get($train, 'date') }}" class="w-full p-2 border border-gray-300 rounded" type="date" name="trains[{{ $index }}][date]"/>
                 </div>
                 <div class="w-full">
-                    <input class="w-full p-2 border border-gray-300 rounded" type="number" name="trains[{{ $index }}][time]" placeholder="Time fomat HH(08, 14...)"/>
+                    <input value="{{ Arr::get($train, 'time') }}" class="w-full p-2 border border-gray-300 rounded" type="text" name="trains[{{ $index }}][time]" placeholder="Time fomat HH(08, 14...)"/>
                 </div>
                 <div class="w-full">
-                    <input class="w-full p-2 border border-gray-300 rounded" type="text" name="trains[{{ $index }}][trainID]" placeholder="Train id"/>
+                    <input value="{{ Arr::get($train, 'trainID') }}" class="w-full p-2 border border-gray-300 rounded" type="text" name="trains[{{ $index }}][trainID]" placeholder="Train id"/>
                 </div>
                 <button wire:click="addTrain" type="button"
                         class="p-2 w-[120px] h-[40px] bg-blue-500 text-white border-none rounded cursor-pointer">+
                 </button>
             </div>
         @endforeach
-        <button type="submit" class="bg-blue-500 text-white border-none rounded cursor-pointer px-6 py-2">
-            Get information
-        </button>
+        <div class="flex justify-end">
+            <button type="submit" class="bg-blue-500 text-white border-none rounded cursor-pointer px-6 py-2">
+                Get information
+            </button>
+        </div>
     </form>
 
 </div>

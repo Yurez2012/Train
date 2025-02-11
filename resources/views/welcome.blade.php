@@ -2,14 +2,12 @@
 
 @section('content')
     <div class="container mx-auto px-4 py-10">
-        <h1>
-            Trains script
+        <h1 class="text-[30px] font-bold">
+            Train script
         </h1>
 
-        <livewire:train-form/>
-
         @if(count($result) > 0)
-            <table class="table-auto border-separate border-spacing-2 border border-gray-400 dark:border-gray-500">
+            <table class="w-full table-auto border-separate border-spacing-2 border border-gray-400 dark:border-gray-500 mt-4">
                 <thead>
                 <tr>
                     <td class="px-4 border border-gray-300 dark:border-gray-600">
@@ -98,5 +96,7 @@
                 </tbody>
             </table>
         @endif
+
+        <livewire:train-form/>
     </div>
 @endsection

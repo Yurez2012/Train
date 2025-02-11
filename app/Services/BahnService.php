@@ -30,7 +30,7 @@ class BahnService
     {
         $response = Http::withHeaders($this->getHeader())->get($this->url . "/station/{$station}");
 
-        return $this->getResponse($response);
+        return Arr::get($this->getResponse($response), 'station.@attributes.eva');
     }
 
     /**

@@ -17,6 +17,10 @@ class TrainForm extends Component
 
     public function render()
     {
+        if(request()->has('trains')) {
+            $this->trains = request()->get('trains', []);
+        }
+
         return view('livewire.train-form');
     }
 }
