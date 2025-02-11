@@ -32,7 +32,7 @@ class HomeController extends Controller
         $result = [];
 
         foreach (Arr::get($data, 'trains', []) as $key => $train) {
-            $evaNumber = $this->config[Arr::get($train, 'station')] ?? $this->bahnService->getStation('Neumünster');
+            $evaNumber = $this->config[Arr::get($train, 'station')] ?? $this->bahnService->getStation(Arr::get($train, 'station'));
 
             $result[Arr::get($train, 'station')] = $this->bahnService->getStationInfoByTimeAndTrainId(
                 $evaNumber,
